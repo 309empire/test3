@@ -7,7 +7,6 @@ export function serveStatic(app: Express) {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
 
-  // Use path.join for more robust path resolution
   const distPath = path.resolve(__dirname, "../dist/public");
 
   if (!fs.existsSync(distPath)) {
@@ -21,13 +20,12 @@ export function serveStatic(app: Express) {
 
   /**
    * 2. Fallback for SPA routes
-   * FIX: Changed from "*" to "/:path*" to satisfy path-to-regexp v8+ requirements.
-   * This captures all remaining GET requests and serves index.html.
+   * Using /.*/ (a Regular Expression) instead of a string.
+   * This is the "bulletproof" fix for Node 22 and path-to-regexp v8.
    */
-  app.get("/:path*", (_req, res) => {
+  app.get(/.*/, (_req, res) => {
     res.sendFile(path.resolve(distPath, "index.html"), (err) => {
       if (err) {
-        // Handle cases where index.html might be missing during a request
         res.status(500).send("Error loading index.html");
       }
     });
