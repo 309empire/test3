@@ -15,15 +15,12 @@ export function serveStatic(app: Express) {
     );
   }
 
-  // 1. Serve static files (CSS, JS, Images)
+  // 1. Serve static files
   app.use(express.static(distPath));
 
-  /**
-   * 2. Fallback for SPA routes
-   * Using /.*/ (a Regular Expression) instead of a string.
-   * This is the "bulletproof" fix for Node 22 and path-to-regexp v8.
-   */
-  app.get(/.*/, (_req, res) => {
+  // 2. Fallback for SPA routes 
+  // We use new RegExp to ensure the build tool (esbuild) doesn't trip over slashes
+  app.get(new RegExp(".*"), (_req, res) => {
     res.sendFile(path.resolve(distPath, "index.html"), (err) => {
       if (err) {
         res.status(500).send("Error loading index.html");
